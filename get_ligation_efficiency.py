@@ -1,4 +1,5 @@
 from collections import Counter
+import gzip
 import operator
 import pysam
 import re
@@ -25,6 +26,8 @@ class LigationEfficiency:
             self.count_barcodes_in_bam_file(filename)
         elif filename.lower().endswith((".fastq", ".fq")):
             self.count_barcodes_in_fastq_file(filename)
+        elif filename.lover().endswith((".fastq.gz", ".fq.gz")):
+            self.count_barcodes_in_fastqgz_file(filename)
 
     def count_barcodes_in_bam_file(self, bamfile):
         with pysam.AlignmentFile(bamfile, "rb") as f:
@@ -34,6 +37,15 @@ class LigationEfficiency:
 
     def count_barcodes_in_fastq_file(self, fastqfile):
         with open(fastqfile, "r") as f:
+            for line in f:
+                self.count_barcodes_in_name(line)
+                next(f)
+                next(f)
+                next(f)
+                self._total += 1
+
+    def count_barcodes_in_fastqgz_file(self, fastqgzfile):
+        with gzip.open(fastqgzfile, "r") as f:
             for line in f:
                 self.count_barcodes_in_name(line)
                 next(f)
