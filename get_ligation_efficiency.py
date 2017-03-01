@@ -54,8 +54,6 @@ class LigationEfficiency:
 
     def print_to_stdout(self):
 
-        print "NUMBER\tCOUNT\tPCT"
-
         counts = sorted(self._aggregate_count.items(),
                         key=operator.itemgetter(0))
 
@@ -65,8 +63,6 @@ class LigationEfficiency:
                 str(num_barcodes) + " barcodes.")
 
         print
-        print "POSITION\tCOUNT\tPCT"
-
         counts = sorted(self._position_count.items(),
                         key=operator.itemgetter(0))
 
