@@ -26,7 +26,7 @@ class LigationEfficiency:
             self.count_barcodes_in_bam_file(filename)
         elif filename.lower().endswith((".fastq", ".fq")):
             self.count_barcodes_in_fastq_file(filename)
-        elif filename.lover().endswith((".fastq.gz", ".fq.gz")):
+        elif filename.lower().endswith((".fastq.gz", ".fq.gz")):
             self.count_barcodes_in_fastqgz_file(filename)
 
     def count_barcodes_in_bam_file(self, bamfile):
@@ -71,8 +71,9 @@ class LigationEfficiency:
 
         for num_barcodes, count in counts:
             pct = "{0:.1f}%".format(100.0 * count / self._total)
+            barcode = "barcode" if num_barcodes == 1 else "barcodes"
             print (str(count) + " (" + pct + ") reads found with " +
-                str(num_barcodes) + " barcodes.")
+                str(num_barcodes) + " " + barcode + ".")
 
         print
         counts = sorted(self._position_count.items(),
