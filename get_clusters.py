@@ -5,6 +5,7 @@ def main():
     args = parse_arguments()
     clusters = c.get_clusters(args.input, args.num_barcodes)
     c.write_clusters_to_file(clusters, args.output)
+    print "done"
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
