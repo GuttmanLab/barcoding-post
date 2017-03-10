@@ -9,7 +9,7 @@ def main():
 def parse_arguments():
     parser = argparse.ArgumentParser(description =
             "This program removes reads from a BAM file if they do not " +
-            "all barcodes. It does this by searching for the string " +
+            "all tags. It does this by searching for the string " +
             "\"NOT_FOUND\" in the query name.")
     parser.add_argument('-i', '--input', action = 'store', metavar = 'FILE',
                         help = 'Input BAM file')
