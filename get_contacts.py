@@ -86,7 +86,7 @@ def parse_arguments():
                         metavar = 'DW',
                         action = 'store',
                         default = "none",
-                        choices = ["none", "n_minus_one"],
+                        choices = ["none", "n_minus_one", "n_over_two"],
                         help = "Downweighting strategy")
     parser.add_argument('--hicorrector',
                         metavar = "FILE",

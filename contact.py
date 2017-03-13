@@ -7,7 +7,8 @@ import subprocess
 class Downweighting(Enum):
     NONE = 1
     N_MINUS_ONE = 2
-    UNKNOWN = 3
+    N_OVER_TWO = 3
+    UNKNOWN = 4
 
 class Contacts:
     def __init__(self, chromosome, build = "mm9", resolution = 1000000,
@@ -22,6 +23,8 @@ class Contacts:
             self._downweighting = Downweighting.NONE
         elif downweighting == "n_minus_one":
             self._downweighting = Downweighting.N_MINUS_ONE
+        elif downweighting == "n_over_two":
+            self._downweighting = Downweighting.N_OVER_TWO
         else:
             self._downweighting = Downweighting.UNKNOWN
 
@@ -88,11 +91,13 @@ class Contacts:
     def add_bins_to_contacts(self, bins):
 
         if len(bins) > 1:
-            if self._downweighting == Downweighting.NONE:
-                inc = 1.0
+            if self._downweighting == Downweighting.N_OVER_TWO:
+                inc = 2.0 / len(bins)
+            elif self._downweighting == Downweighting.N_MINUS_ONE:
+                inc = 1.0 / (len(bins) - 1)
             else:
-                assert self._downweighting == Downweighting.N_MINUS_ONE
-                inc = 1.0 / (len(bins) + 1)
+                assert self._downweighting == Downweighting.NONE:
+                inc = 1.0
 
             for bin1, bin2 in combinations(bins, 2):
                 self._contacts[bin1][bin2] += inc
