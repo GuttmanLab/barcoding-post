@@ -62,12 +62,12 @@ class Clusters:
     """This class represents a collection of barcoding clusters.
 
     Methods:
-    - get_cluster(barcode): Returns the cluster that corresponds to the given
+    - get_cluster(barcodes): Returns the cluster that corresponds to the given
       barcode. If the cluster does not exist, it is initialized (with zero
       positions), and this empty cluster is returned.
 
-    - add_position(barcode, position): Adds the position to the cluster
-      that corresponds with the given barcode
+    - add_position(barcodes, position): Adds the position to the cluster
+      that corresponds with the given barcodes
 
     - to_strings(): Returns an iterator over the string representations of all
       of the contained clusters.
@@ -75,33 +75,36 @@ class Clusters:
     def __init__(self):
         self._clusters = {}
 
-    def get_cluster(self, barcode):
-        if barcode not in self._clusters:
-            self._clusters[barcode] = Cluster()
-        return self._clusters[barcode]
+    def get_cluster(self, barcodes):
+        if barcodes not in self._clusters:
+            self._clusters[barcodes] = Cluster()
+        return self._clusters[barcodes]
 
-    def add_position(self, barcode, position):
-        self.get_cluster(barcode).add_position(position)
+    def add_position(self, barcodes, position):
+        self.get_cluster(barcodes).add_position(position)
 
     def to_strings(self):
-        for barcode, cluster in self._clusters.iteritems():
-            yield barcode + "\t" + cluster.to_string()
+        for barcodes, cluster in self._clusters.iteritems():
+            yield barcodes + "\t" + cluster.to_string()
+
+    def remove_cluster(self, barcodes):
+        del self._clusters[barcodes]
 
 
-def get_clusters(bamfile, num_tags):
+def get_clusters(bamfile, num_barcodes):
     """Parses a BAM file, groups positions into clusters according to their
     barcodes, and returns the resulting structure.
 
-    Each BAM record must have the barcode stored in the query name like so:
+    Each BAM record must have the barcodes stored in the query name like so:
 
-    ORIGINAL_READ_NAME::[Tag1][Tag2][Tag3]
+    ORIGINAL_READ_NAME::[Barcode1][Barcode2][Barcode3]
 
-    The tags should be enclosed in brackets and separated from the original
-    read name with a double-colon.
+    The individual barcodes should be enclosed in brackets and separated from
+    the original read name with a double-colon.
     """
 
     clusters = Clusters()
-    pattern = re.compile('::' + num_tags * '\[(\w+)\]')
+    pattern = re.compile('::' + num_barcodes * '\[(\w+)\]')
 
     with pysam.AlignmentFile(bamfile, "rb") as f:
 
@@ -109,8 +112,8 @@ def get_clusters(bamfile, num_tags):
             position = Position(read.reference_name, read.reference_start)
             name = read.query_name
             match = pattern.search(name)
-            barcode = ".".join(match.groups())
-            clusters.add_position(barcode, position)
+            barcodes = ".".join(match.groups())
+            clusters.add_position(barcodes, position)
 
     return clusters
 
