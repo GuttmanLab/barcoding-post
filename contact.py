@@ -96,7 +96,7 @@ class Contacts:
             elif self._downweighting == Downweighting.N_MINUS_ONE:
                 inc = 1.0 / (len(bins) - 1)
             else:
-                assert self._downweighting == Downweighting.NONE:
+                assert self._downweighting == Downweighting.NONE
                 inc = 1.0
 
             for bin1, bin2 in combinations(bins, 2):
