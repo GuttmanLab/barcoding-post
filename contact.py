@@ -1,5 +1,6 @@
 from enum import Enum
 from itertools import combinations
+from random import random
 import assembly
 import numpy as np
 import subprocess
@@ -9,6 +10,7 @@ class Downweighting(Enum):
     N_MINUS_ONE = 2
     N_OVER_TWO = 3
     UNKNOWN = 4
+
 
 class Contacts:
     def __init__(self, chromosome, build = "mm9", resolution = 1000000,
@@ -28,9 +30,14 @@ class Contacts:
         else:
             self._downweighting = Downweighting.UNKNOWN
 
+        if self._chromosome == "genome":
+            self.init_genome_matrix()
+        else:
+            self.init_chromosome_matrix()
 
-    def get_raw_contacts(self, clusters_file, min_cluster_size = 2,
-                max_cluster_size = 1000):
+
+    def get_raw_contacts_from_clusters_file(self, clusters_file,
+                min_cluster_size = 2, max_cluster_size = 1000):
 
         if self._chromosome.startswith("chr"):
             self.get_raw_contacts_over_chromosome(clusters_file,
@@ -44,9 +51,7 @@ class Contacts:
 
 
     def get_raw_contacts_over_genome(self, clusters_file,
-                    min_cluster_size, max_cluster_size):
-
-        self.init_genome_matrix()
+            min_cluster_size, max_cluster_size):
 
         with open(clusters_file, 'r') as f:
 
@@ -69,8 +74,6 @@ class Contacts:
     def get_raw_contacts_over_chromosome(self, clusters_file,
                 min_cluster_size, max_cluster_size):
 
-        self.init_chromosome_matrix()
-
         with open(clusters_file, 'r') as f:
 
             for line in f:
@@ -86,6 +89,19 @@ class Contacts:
                         bins.add(read_bin)
 
                 self.add_bins_to_contacts(bins)                
+
+
+    def get_raw_contacts_from_hic_file(self, hic_file):
+
+        with open(hic_file, 'r') as f:
+            for line in f:
+                line = line.rstrip()
+                pos1, pos2, count = line.split()
+                pos1 = int(pos1) // self._resolution
+                pos2 = int(pos2) // self._resolution
+                count = int(float(count))
+                self._contacts[pos1][pos2] = count
+                self._contacts[pos2][pos1] = count
 
 
     def add_bins_to_contacts(self, bins):
@@ -104,6 +120,11 @@ class Contacts:
                 self._contacts[bin2][bin1] += inc
 
 
+    def zero_diagonal_entries(self):
+        for i in xrange(len(self._contacts)):
+            self._contacts[i][i] = 0
+
+
     def init_chromosome_matrix(self):
         chromosome_size = self._assembly.get_size(self._chromosome)
         num_bins = -(-chromosome_size // self._resolution)
@@ -119,7 +140,6 @@ class Contacts:
 
     def write_contacts_to_file(self, outfile, fmt):
         np.savetxt(outfile, self._contacts, delimiter = "\t", fmt = fmt)
-
 
 
     def ice_raw_contacts(self, raw_contacts_file, bias_file, iterations,
@@ -176,3 +196,28 @@ class Contacts:
             diagonal_values.append(self._contacts[i][i + 1])
 
         return np.median(diagonal_values)
+
+
+    def downsample(self, target):
+        dim = len(self._contacts)
+
+        total_contacts = 0
+
+        # Only sum contacts from diagonal and upper-triangle
+        # Otherwise, will double-count.
+        for i in xrange(dim):
+            for j in xrange(i + 1):
+                total_contacts += self._contacts[i][j]
+
+        downsample_ratio = float(target) / total_contacts
+
+        for i in xrange(dim):
+            for j in xrange(i + 1):
+                num_contacts = self._contacts[i][j]
+                for contact in xrange(num_contacts):
+                    if random() < downsample_ratio:
+                        num_contacts -= 1
+                self._contacts[i][j] = num_contacts
+                self._contacts[j][i] = num_contacts
+
+
