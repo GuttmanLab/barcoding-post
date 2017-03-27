@@ -9,9 +9,10 @@ def main():
                         resolution = args.resolution,
                         downweighting = args.downweighting)
 
-    contacts.get_raw_contacts(clusters_file = args.clusters,
-                              min_cluster_size = args.min_cluster_size,
-                              max_cluster_size = args.max_cluster_size)
+    contacts.get_raw_contacts_from_clusters_file(
+            clusters_file = args.clusters,
+            min_cluster_size = args.min_cluster_size,
+            max_cluster_size = args.max_cluster_size)
 
     contacts.write_contacts_to_file(outfile = args.raw_contacts, fmt = "%1f")
 
