@@ -92,8 +92,8 @@ def parse_arguments():
     parser.add_argument('--hicorrector',
                         metavar = "FILE",
                         action = 'store',
-                        default = "/storage/Software/hicorrector/1.2/bin/ic",
-                        help = "Path to hicorrector ic. (default /storage/Software/hicorrector/1.2/bin/ic)")
+                        default = "/mnt/new-storage/Software/hicorrector/1.2/bin/ic",
+                        help = "Path to hicorrector ic. (default /mnt/new-storage/Software/hicorrector/1.2/bin/ic)")
     parser.add_argument('--iterations',
                         metavar = 'INT',
                         type = int,
