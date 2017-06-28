@@ -2,13 +2,18 @@ from collections import OrderedDict
 
 class Assembly(object):
     _chromsizes = None
+    _resolution = None
 
-    def init_offsets(self, resolution):
+    def __init__(self, resolution):
+        self._resolution = resolution
+        self.init_offsets()
+
+    def init_offsets(self):
         count = 0
         self._offsets = OrderedDict()
         for (chrom, size) in self._chromsizes.iteritems():
             self._offsets[chrom] = count
-            count += -(-size // resolution)
+            count += -(-size // self._resolution)
 
     def get_size(self, chrom):
         return self._chromsizes.get(chrom)
@@ -16,9 +21,16 @@ class Assembly(object):
     def get_offset(self, chrom):
         return self._offsets.get(chrom)
 
+    def get_position(self, n):
+        for (chrom, offset) in reversed(self._offsets.items()):
+            if n - offset >=  0:
+                return (chrom, (n - offset) * self._resolution)
+        raise ValueError
+        
+
 class Mm9(Assembly):
 
-    def __init__(self):
+    def __init__(self, resolution):
         self._chromsizes = OrderedDict([
             ('chr1', 197195432),
             ('chr2', 181748087),
@@ -40,14 +52,47 @@ class Mm9(Assembly):
             ('chr18', 90772031),
             ('chr19', 61342430),
             ('chrX', 166650296)])
+        super(Mm9, self).__init__(resolution)
 
     @classmethod
     def is_named(cls, name):
         return name == "mm9"
 
+
+class Mm10(Assembly):
+
+    def __init__(self, resolution):
+        self._chromsizes = OrderedDict([
+            ('chr1', 195471971),
+            ('chr2', 182113224),
+            ('chr3', 160039680),
+            ('chr4', 156508116),
+            ('chr5', 151834684),
+            ('chr6', 149736546),
+            ('chr7', 145441459),
+            ('chr8', 129401213),
+            ('chr9', 124595110),
+            ('chr10', 130694993),
+            ('chr11', 122082543),
+            ('chr12', 120129022),
+            ('chr13', 120421639),
+            ('chr14', 124902244),
+            ('chr15', 104043685),
+            ('chr16', 98207768),
+            ('chr17', 94987271),
+            ('chr18', 90702639),
+            ('chr19', 61431566),
+            ('chrX', 171031299)])
+        super(Mm10, self).__init__(resolution)
+
+    @classmethod
+    def is_named(cls, name):
+        return name == "mm10"
+
+
 class Hg19(Assembly):
 
-    def __init__(self):
+    def __init__(self, resolution):
         self._chromsizes = OrderedDict([
             ('chr1', 249250621),
             ('chr2', 243199373),
@@ -72,13 +117,15 @@ class Hg19(Assembly):
             ('chr21', 48129895),
             ('chr22', 51304566),
             ('chrX', 155270560)])
+        super(Hg19, self).__init__(resolution)
 
     @classmethod
     def is_named(cls, name):
         return name == "hg19"
 
-def build(name):
+
+def build(name, resolution):
     for cls in Assembly.__subclasses__():
         if cls.is_named(name):
-            return cls()
+            return cls(resolution)
     raise ValueError
