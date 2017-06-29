@@ -18,8 +18,7 @@ class Contacts:
 
         self._chromosome = chromosome
         self._resolution = resolution
-        self._assembly = assembly.build(build)
-        self._assembly.init_offsets(self._resolution)
+        self._assembly = assembly.build(build, resolution)
 
         if downweighting == "none":
             self._downweighting = Downweighting.NONE
