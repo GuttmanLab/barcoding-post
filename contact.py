@@ -227,7 +227,7 @@ class Contacts:
                     self._contacts[bin2][bin1] += 1
 
 
-    def get_genomic_position(chromosome, position):
+    def get_genomic_position(self, chromosome, position):
         """Converts a chromosome and position to the appropriate heatmap index
         for a genome-wide interchromosomal heatmap
 
