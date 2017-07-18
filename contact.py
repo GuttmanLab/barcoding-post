@@ -197,7 +197,7 @@ class Contacts:
 
         assert self._chromosome.startswith("chr")
 
-        with (open(hic_file, 'r') as f:
+        with open(hic_file, 'r') as f:
             for line in f:
                 _, chrom1, pos1, _ chrom2, pos2, _ = line.split()
                 if self._chromosome == chrom1 == chrom2:
