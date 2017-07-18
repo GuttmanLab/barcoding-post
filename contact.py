@@ -337,6 +337,7 @@ class Contacts:
         """
 
         biases = []
+
         with open(bias_file) as f:
             for line in f:
                 biases.append(float(line.strip()))
@@ -344,7 +345,6 @@ class Contacts:
 
 
     def get_median_diagonal_value(self):
-        diagonal_values = []
         """Returns the median diagonal value of this object's internal heatmap
         matrix."
 
@@ -352,6 +352,8 @@ class Contacts:
             The median diagonal value is actually the median of the two
             diagonals offset by +1 and -1.
         """
+
+        diagonal_values = []
 
         for i in xrange(self._contacts.shape[0] - 1):
             diagonal_values.append(self._contacts[i + 1][i])
