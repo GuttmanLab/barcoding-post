@@ -100,7 +100,7 @@ class Contacts:
 
                 for read in reads:
                     chromosome, position = read.split(':')
-                    genome_pos = get_genomic_position(chromosome, position)
+                    genome_pos = self.get_genomic_position(chromosome, position)
                     if genome_pos is not None:  # genome_pos == None if chrom not in dict
                         bins.add(genome_pos)
 
@@ -218,8 +218,8 @@ class Contacts:
 
             for line in f:
                 _, chrom1, pos1, _, chrom2, pos2, _ = line.split()
-                bin1 = get_genomic_position(chrom1, pos1)
-                bin2 = get_genomic_position(chrom2, pos2)
+                bin1 = self.get_genomic_position(chrom1, pos1)
+                bin2 = self.get_genomic_position(chrom2, pos2)
 
                 # Bins == None if get_genomic_position passed unknown chrom
                 if bin1 is not None and bin2 is not None:
