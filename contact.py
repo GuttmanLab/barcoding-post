@@ -168,7 +168,7 @@ class Contacts:
                 self._contacts[pos2][pos1] = count
 
 
-    def get_raw_contacts_from_ren_hic_file(self, hic_file):,
+    def get_raw_contacts_from_ren_hic_file(self, hic_file):
         """Parses a Hi-C file from the Ren lab and stores the contacts.
 
         The Ren lab's Hi-C files have seven columns. Columns two and three
