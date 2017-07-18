@@ -62,23 +62,22 @@ class Contacts:
             self.init_chromosome_matrix()
 
 
-    def get_raw_contacts_from_clusters_file(self, clusters_file,
+    def get_raw_contacts_from_sprite_file(self, clusters_file,
                 min_cluster_size = 2, max_cluster_size = 1000):
-        """Parses a SPRITE clusters file and stores the relevant contacts.
-        """
+        """Parses a SPRITE clusters file and stores the relevant contacts."""
 
         if self._chromosome.startswith("chr"):
-            self.get_raw_contacts_over_chromosome(clusters_file,
+            self.get_raw_intrachromosomal_contacts_from_sprite_file(clusters_file,
                     min_cluster_size, max_cluster_size)
         elif self._chromosome == "genome":
-            self.get_raw_contacts_over_genome(clusters_file,
+            self.get_raw_interchromosomal_contacts_from_sprite_file(clusters_file,
                     min_cluster_size, max_cluster_size)
         else:
             raise Exception, ("Chromosome ID must start with 'chr' or " + 
                               "equal 'genome'")
 
 
-    def get_raw_contacts_over_genome(self, clusters_file,
+    def get_raw_interchromosomal_contacts_from_sprite_file(self, clusters_file,
             min_cluster_size, max_cluster_size):
         """Parses a SPRITE clusters file and stores all contacts.
 
@@ -100,16 +99,15 @@ class Contacts:
                 bins = set()
 
                 for read in reads:
-                    chrom, position = read.split(':')
-                    read_bin = int(position) // self._resolution
-                    offset = self._assembly.get_offset(chrom)
-                    if offset is not None:  # offset == None if chrom not in dict
-                        bins.add(read_bin + offset)
+                    chromosome, position = read.split(':')
+                    genome_pos = get_genomic_position(chromosome, position)
+                    if genome_pos is not None:  # genome_pos == None if chrom not in dict
+                        bins.add(genome_pos)
 
                 self.add_bins_to_contacts(bins)
 
 
-    def get_raw_contacts_over_chromosome(self, clusters_file,
+    def get_raw_intrachromosomal_contacts_from_sprite_file(self, clusters_file,
                 min_cluster_size, max_cluster_size):
         """Parses a SPRITE clusters file and stores contacts from within a
         single chromosome.
@@ -143,7 +141,7 @@ class Contacts:
                 self.add_bins_to_contacts(bins)                
 
 
-    def get_raw_contacts_from_erez_hic_file(self, hic_file):
+    def get_raw_intrachromosomal_contacts_from_aiden_hic_file(self, hic_file):
         """Parses a Hi-C file from the Aiden lab and stores the contacts.
 
         Erez's Hi-C files have three columns. Columns one and two contain
@@ -170,7 +168,7 @@ class Contacts:
                 self._contacts[pos2][pos1] = count
 
 
-    def get_raw_contacts_from_ren_lab_hic_file(self, hic_file):
+    def get_raw_contacts_from_ren_hic_file(self, hic_file):,
         """Parses a Hi-C file from the Ren lab and stores the contacts.
 
         The Ren lab's Hi-C files have seven columns. Columns two and three
@@ -183,6 +181,22 @@ class Contacts:
         HWI-ST216_0305:5:2307:15998:173700#GGTTGT chr1  3000001 + chr1  3000218 -
         """
 
+        if self._chromosome.startswith("chr"):
+            self.get_raw_intrachromosomal_contacts_from_ren_hic_file(hic_file)
+        elif self._chromosome == "genome":
+            self.get_raw_interchromosomal_contacts_from_ren_hic_file(hic_file)
+        else:
+            raise Exception, ("Chromosome ID must start with 'chr' or " + 
+                              "equal 'genome'")
+
+
+    def get_raw_intrachromosomal_contacts_from_ren_hic_file(self, hic_file):
+        """Parses a Hi-C file from the Ren lab and stores the intrachromosomal
+        contacts on one chromosome.
+        """
+
+        assert self._chromosome.startswith("chr")
+
         with (open(hic_file, 'r') as f:
             for line in f:
                 _, chrom1, pos1, _ chrom2, pos2, _ = line.split()
@@ -191,6 +205,44 @@ class Contacts:
                     pos2 = int(pos2) // self._resolution
                     self._contacts[pos1][pos2] += 1
                     self._contacts[pos2][pos1] += 1
+
+
+    def get_raw_interchromosomal_contacts_from_ren_hic_file(self, hic_file):
+        """Parses a Hi-C file from the Ren lab and stores all contacts for a
+        genome-wide interchromosomal heatmap.
+        """
+
+        assert self._chromosome == "genome"
+
+        with open(hic_file, 'r') as f:
+
+            for line in f:
+                _, chrom1, pos1, _ chrom2, pos2, _ = line.split()
+                bin1 = get_genomic_position(chrom1, pos1)
+                bin2 = get_genomic_position(chrom2, pos2)
+
+                # Bins == None if get_genomic_position passed unknown chrom
+                if bin1 is not None and bin2 is not None:
+                    self._contacts[bin1][bin2] += 1
+                    self._contacts[bin2][bin1] += 1
+
+
+    def get_genomic_position(chromosome, position):
+        """Converts a chromosome and position to the appropriate heatmap index
+        for a genome-wide interchromosomal heatmap
+
+        For example, passing "chr3" and 10000 will return a value which
+        (conceptually) is (10000 + length(chr2) + length(chr1)) / resolution.
+
+        Args:
+            chromosome (str): The chromosome, e.g., "chr1".
+            position (int): The position along the chromosome.
+        """
+
+        read_bin = int(position) // self._resolution
+        offset = self._assembly.get_offset(chromosome)
+        if offset is not None:
+            return read_bin + offset
 
 
     def add_bins_to_contacts(self, bins):
@@ -287,7 +339,8 @@ class Contacts:
 
     def truncate_to_median_diagonal_value(self):
         """Scales all values in the internal heatmap matrix relative to the
-        median value of the n-1 and the n+1 diagonals.
+        median value of the +1 and the -1 diagonals (offset from main diagonal
+        by +/- 1).
 
         If the median value is 10, a value of 3 will be scaled to 0.3 and a
         value of 9 will be scaled to 0.9. A value of 11 would be set to 1
@@ -390,5 +443,3 @@ class Contacts:
                         num_contacts -= 1
                 self._contacts[i][j] = num_contacts
                 self._contacts[j][i] = num_contacts
-
-
