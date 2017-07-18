@@ -199,7 +199,7 @@ class Contacts:
 
         with open(hic_file, 'r') as f:
             for line in f:
-                _, chrom1, pos1, _ chrom2, pos2, _ = line.split()
+                _, chrom1, pos1, _, chrom2, pos2, _ = line.split()
                 if self._chromosome == chrom1 == chrom2:
                     pos1 = int(pos1) // self._resolution
                     pos2 = int(pos2) // self._resolution
@@ -217,7 +217,7 @@ class Contacts:
         with open(hic_file, 'r') as f:
 
             for line in f:
-                _, chrom1, pos1, _ chrom2, pos2, _ = line.split()
+                _, chrom1, pos1, _, chrom2, pos2, _ = line.split()
                 bin1 = get_genomic_position(chrom1, pos1)
                 bin2 = get_genomic_position(chrom2, pos2)
 
