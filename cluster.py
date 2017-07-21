@@ -104,7 +104,7 @@ def get_clusters(bamfile, num_tags):
     """
 
     clusters = Clusters()
-    pattern = re.compile('::' + num_tags * '\[(\w+)\]')
+    pattern = re.compile('::' + num_tags * '\[([a-zA-Z0-9_\-]+)\]')
 
     with pysam.AlignmentFile(bamfile, "rb") as f:
 
