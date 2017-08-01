@@ -72,7 +72,7 @@ def get_organism_from_read(read):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description = 'Calculates noise in a human/mouseSPRITE experiment')
+        description = 'Calculates noise in a human/mouse SPRITE experiment')
 
     parser.add_argument('--input',
         metavar = "FILE",
