@@ -18,7 +18,7 @@ class LigationEfficiency:
     def __init__(self):
         self._aggregate_count = Counter()
         self._position_count = Counter()
-        self._pattern = re.compile('\[([a-zA-Z0-9_\-])\]')
+        self._pattern = re.compile('\[([a-zA-Z0-9_\-]+)\]')
         self._total = 0
 
     def count_barcodes(self, filename):
